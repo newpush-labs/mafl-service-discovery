@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  mafl:
+    container_name: mafl
+    image: hywax/mafl
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./config/config.yml:/app/data/config.yml
+
+  mafl-service-discovery:
+    container_name: mafl-service-discovery
+    image: hdkiller/mafl-service-discovery:latest
+    build: .
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./config/base.yml:/app/config/base.yml
+      - ./config/config.yml:/app/config/config.yml
+    command: python mafl-service-discovery.py
