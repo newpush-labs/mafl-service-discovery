@@ -1,14 +1,35 @@
-# Use an official Python runtime as a parent image
-FROM python:3.9-slim
+# Use a multi-arch base image
+FROM --platform=$BUILDPLATFORM python:3.9-slim-buster as builder
 
-# Set the working directory in the container
+# Set working directory
 WORKDIR /app
 
-# Copy the current directory contents into the container at /app
-COPY . /app
+# Install build dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    libc6-dev \
+    && rm -rf /var/lib/apt/lists/*
 
-# Install any needed packages specified in requirements.txt
-RUN pip install --no-cache-dir -r requirements.txt
+# Copy requirements file
+COPY requirements.txt .
 
-# Run mafl-service-discovery.py when the container launches
+# Install Python dependencies
+RUN pip install --user --no-cache-dir -r requirements.txt
+
+# Start a new stage for the final image
+FROM --platform=$TARGETPLATFORM python:3.9-slim-buster
+
+# Set working directory
+WORKDIR /app
+
+# Copy Python dependencies from builder stage
+COPY --from=builder /root/.local /root/.local
+
+# Make sure scripts in .local are usable:
+ENV PATH=/root/.local/bin:$PATH
+
+# Copy application code
+COPY . .
+
+# Run the application
 CMD ["python", "mafl-service-discovery.py"]
