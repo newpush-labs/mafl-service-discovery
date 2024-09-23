@@ -44,8 +44,8 @@ def get_mafl_services():
                     if group not in mafl_services:
                         mafl_services[group] = []
                     mafl_services[group].append(service)
-                    print(f"Service: {service}")
-                    pprint(service)
+                    # print(f"Service: {service}")
+                    # pprint(service)
 
         return mafl_services
 
@@ -63,8 +63,12 @@ def update_config_yaml(mafl_services):
         
         base_config['services'][group].extend(services)
     
-    with open('config/config.yml', 'w') as file:
-        yaml.dump(base_config, file, sort_keys=False)
+    with open('config/config.yml', 'r') as file:
+        current_config = yaml.safe_load(file)
+    
+    if current_config != base_config:
+        with open('config/config.yml', 'w') as file:
+            yaml.dump(base_config, file, sort_keys=False)
 
 def monitor_docker_events():
     try:
@@ -78,7 +82,7 @@ def monitor_docker_events():
             if event['Type'] in ['container', 'service']:
                 mafl_services = get_mafl_services()
                 update_config_yaml(mafl_services)
-                print("config.yml has been updated due to Docker event.")
+                # print("config.yml has been updated due to Docker event.")
 
     except Exception as e:
         print(f"An error occurred: {e}")
