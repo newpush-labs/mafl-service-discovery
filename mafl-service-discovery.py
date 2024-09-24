@@ -28,6 +28,7 @@ def get_mafl_services():
                         'link': labels.get('mafl.link', ''),
                         'icon': {
                             'name': labels.get('mafl.icon.name', ''),
+                            'url': labels.get('mafl.icon.url', ''),
                             'wrap': labels.get('mafl.icon.wrap', 'true').lower() == 'true',
                         }
                     }
@@ -40,11 +41,25 @@ def get_mafl_services():
                             'enabled': labels['mafl.status.enabled'].lower() == 'true',
                             'interval': int(labels.get('mafl.status.interval', 60))
                         }
-                    
+                        
+                    for main_key in list(service.keys()):
+                        if isinstance(service[main_key], dict):
+                            for sub_key in list(service[main_key].keys()):
+                                if service[main_key][sub_key] == '':
+                                    del service[main_key][sub_key]
+                            if not service[main_key]:
+                                del service[main_key]
+
+                    for key in list(service.keys()):
+                        if service[key] == '' and key != 'icon':
+                            del service[key]
+                        
                     if group not in mafl_services:
                         mafl_services[group] = []
+
                     mafl_services[group].append(service)
-                    # print(f"Service: {service}")
+
+                    # print(f"Group {group}:")
                     # pprint(service)
 
         return mafl_services
