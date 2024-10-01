@@ -6,6 +6,32 @@ from pprint import pprint
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
+import os
+import re
+
+def replace_env_variables(config):
+    pattern = re.compile(r'\$\{(\w+)\}')
+    if isinstance(config, dict):
+        for key, value in config.items():
+            if isinstance(value, str):
+                matches = pattern.findall(value)
+                for match in matches:
+                    env_value = os.getenv(match, '')
+                    value = value.replace(f'${{{match}}}', env_value)
+                config[key] = value
+            elif isinstance(value, dict):
+                replace_env_variables(value)
+            elif isinstance(value, list):
+                for i in range(len(value)):
+                    if isinstance(value[i], str):
+                        matches = pattern.findall(value[i])
+                        for match in matches:
+                            env_value = os.getenv(match, '')
+                            value[i] = value[i].replace(f'${{{match}}}', env_value)
+                    elif isinstance(value[i], dict):
+                        replace_env_variables(value[i])
+    return config
+
 def get_mafl_services():
     try:
         client = docker.from_env()
@@ -69,8 +95,10 @@ def get_mafl_services():
         return {}
 
 def update_config_yaml(mafl_services):
+
     with open('config/base.yml', 'r') as file:
         base_config = yaml.safe_load(file)
+        base_config = replace_env_variables(base_config)
     
     for group, services in mafl_services.items():
         if group not in base_config['services']:

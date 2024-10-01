@@ -3,7 +3,7 @@ services:
   Services:
   - title: Home Assistant
     description: Home automation
-    link: https://home-assistant.home.local/
+    link: https://home-assistant.foo/
     icon:
       name: simple-icons:homeassistant
       wrap: true
@@ -25,14 +25,3 @@ services:
       wrap: true
     status:
       enabled: true
-  Cloud:
-  - title: Dockge
-    description: Stack-oriented Docker Manager
-    link: https://dockge.
-    icon:
-      url: bhttps://dockge.kuma.pet/icon.svg
-      wrap: true
-      color: '#007acc'
-    status:
-      enabled: true
-      interval: 60

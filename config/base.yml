@@ -3,7 +3,7 @@ services:
   Services:
     - title: Home Assistant
       description: Home automation
-      link: https://home-assistant.home.local/
+      link: https://home-assistant.${DOMAIN}/
       icon:
         name: simple-icons:homeassistant
         wrap: true
