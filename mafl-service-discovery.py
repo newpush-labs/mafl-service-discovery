@@ -118,16 +118,15 @@ def monitor_docker_events():
         client = docker.from_env()
 
         def event_stream():
-            for event in client.events(decode=True):
+            for event in client.events(decode=True, filters={'type': ['container', 'service']}):
                 yield event
-                time.sleep(0.1)  # Adding a delay to prevent 100% CPU usage
+                # time.sleep(0.1)  # Adding a delay to prevent 100% CPU usage
 
-        for event in client.events(decode=True):
-            if event['Type'] in ['container', 'service']:
+        for event in event_stream():
+            if event['Type'] in ['container', 'service'] and event['Action'] in ['start', 'die']:
+                # print(f"Container: {event['Actor']['Attributes']['name']}, Type: {event['status']}, Action: {event['Action']}")
                 mafl_services = get_mafl_services()
                 update_config_yaml(mafl_services)
-                time.sleep(0.1)  # Adding a delay to prevent 100% CPU usage
-                # print("config.yml has been updated due to Docker event.")
 
     except Exception as e:
         print(f"An error occurred: {e}")
