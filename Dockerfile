@@ -1,5 +1,5 @@
 # Use a multi-arch base image
-FROM --platform=$BUILDPLATFORM python:3.9-slim-buster as builder
+FROM --platform=$BUILDPLATFORM python:3.9-slim-buster AS builder
 
 # Set working directory
 WORKDIR /app
@@ -17,7 +17,9 @@ COPY requirements.txt .
 RUN pip install --user --no-cache-dir -r requirements.txt
 
 # Start a new stage for the final image
-FROM --platform=$TARGETPLATFORM python:3.9-slim-buster
+# FROM --platform=$TARGETPLATFORM python:3.9-slim-buster
+
+FROM python:3.9-slim-buster
 
 # Set working directory
 WORKDIR /app
