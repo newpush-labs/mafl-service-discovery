@@ -3,7 +3,7 @@ services:
   Services:
   - title: Home Assistant
     description: Home automation
-    link: https://home-assistant.foo/
+    link: https://home-assistant./
     icon:
       name: simple-icons:homeassistant
       wrap: true

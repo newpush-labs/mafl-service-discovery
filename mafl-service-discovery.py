@@ -120,8 +120,9 @@ def monitor_docker_events():
         def event_stream():
             for event in client.events(decode=True):
                 yield event
+                time.sleep(0.1)  # Adding a delay to prevent 100% CPU usage
 
-        for event in event_stream():
+        for event in client.events(decode=True, timeout=10):
             if event['Type'] in ['container', 'service']:
                 mafl_services = get_mafl_services()
                 update_config_yaml(mafl_services)
