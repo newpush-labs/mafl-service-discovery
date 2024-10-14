@@ -8,7 +8,7 @@ Mafl Service Discovery is a tool designed to automatically discover and configur
 - **Docker Event Monitoring**: Monitors Docker events to keep the service list up-to-date.
 - **Base File Watching**: Watches for changes in the base configuration file and updates accordingly.
 
-## Configuration
+## Configuration with Docker Labels
 Services are configured via Docker labels. The following labels can be used to define a service:
 - `mafl.enable`: Set to `true` to enable service discovery for the container.
 - `mafl.group`: The group under which the service should be categorized (e.g., Home, Cloud, Docker).
@@ -57,6 +57,25 @@ services:
 networks:
   web:
     external: true
+```
 
+## Configuring with files 
 
+You can place YAML files into the `config/conf.d` directory, and they will be merged with the base configuration. These files are also monitored for changes.
+
+Example:
+
+```yaml
+services:
+  Services:
+    - title: Example App
+      description: Example application description
+      link: https://example.${DOMAIN}/app/
+      icon:
+        name: simple-icons:example
+        wrap: true
+        color: '#123456'
+      status:
+        enabled: true
+```
 
