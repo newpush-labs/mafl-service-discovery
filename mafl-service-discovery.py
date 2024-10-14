@@ -1,6 +1,8 @@
 import docker
 import yaml
 import time
+import collections
+
 from threading import Thread
 from pprint import pprint
 from watchdog.observers import Observer
@@ -94,11 +96,39 @@ def get_mafl_services():
         print(f"An error occurred: {e}")
         return {}
 
+def merge_dicts(dict1, dict2):
+    """
+    Recursively merge two dictionaries.
+    Values in dict2 take precedence over values in dict1.
+    """
+    merged = dict1.copy()
+    for key, value in dict2.items():
+        if isinstance(value, collections.abc.Mapping):
+            merged[key] = merge_dicts(merged.get(key, {}), value)
+        elif isinstance(value, list):
+            if key in merged and isinstance(merged[key], list):
+                merged[key].extend(value)
+            else:
+                merged[key] = value
+        else:
+            merged[key] = value
+    return merged
+
 def update_config_yaml(mafl_services):
 
-    with open('config/base.yml', 'r') as file:
-        base_config = yaml.safe_load(file)
-        base_config = replace_env_variables(base_config)
+    base_config = {}
+    if os.path.exists('config/base.yml'):
+        with open('config/base.yml', 'r') as file:
+            base_config = yaml.safe_load(file)
+            base_config = replace_env_variables(base_config)
+    
+    conf_d_path = 'config/conf.d'
+    if os.path.exists(conf_d_path):
+        for filename in os.listdir(conf_d_path):
+            if filename.endswith('.yml'):
+                with open(os.path.join(conf_d_path, filename), 'r') as file:
+                    conf_d_config = yaml.safe_load(file)
+                    base_config = merge_dicts(base_config, conf_d_config)
     
     for group, services in mafl_services.items():
         if group not in base_config['services']:
@@ -133,15 +163,15 @@ def monitor_docker_events():
 
 class BaseYamlHandler(FileSystemEventHandler):
     def on_modified(self, event):
-        if event.src_path.endswith('base.yml'):
-            print("base.yml has been modified. Rebuilding config.yml...")
+        if event.src_path.endswith('base.yml') or re.search(r'conf\.d/.*\.yml$', event.src_path):
+            print("Yaml files has been modified. Rebuilding config.yml...")
             mafl_services = get_mafl_services()
             update_config_yaml(mafl_services)
 
 def watch_base_yaml():
     event_handler = BaseYamlHandler()
     observer = Observer()
-    observer.schedule(event_handler, path='config', recursive=False)
+    observer.schedule(event_handler, path='config', recursive=True)
     observer.start()
     try:
         while True:

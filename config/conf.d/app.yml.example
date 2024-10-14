@@ -1,0 +1,11 @@
+services:
+  Services:
+    - title: Example App
+      description: Example application description
+      link: https://example.${DOMAIN}/app/
+      icon:
+        name: simple-icons:example
+        wrap: true
+        color: '#123456'
+      status:
+        enabled: true
